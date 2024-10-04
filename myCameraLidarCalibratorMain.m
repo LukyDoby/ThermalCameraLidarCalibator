@@ -3,6 +3,7 @@
 clear; clc; close all;
 
 %% Load images, clouds, intrinsics, ...
+addpath("/home/lukas/ros2_try/bag_processing/MyCameraLidarCalibrator/fresh-clone/Gary_LSD/code/")
 imagePath = fullfile("checkerboard_09_25/data_for_calibration/images");
 ptCloudPath = fullfile("checkerboard_09_25/data_for_calibration/clouds");
 % camera intrinsics

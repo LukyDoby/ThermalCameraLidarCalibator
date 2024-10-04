@@ -1,13 +1,29 @@
 %% RANSAC plane
-clearvars -except brushedData; clc; close all
+clearvars -except brushedData; 
+clc; close all
 
-cloud = pcread("checkerboard_09_25/data_for_calibration/clouds/0013.pcd");
+%cloud = pcread("checkerboard_09_25/data_for_calibration/clouds/0013.pcd");
+cloud = pcread("/home/lukas/ros2_try/bag_processing/MyCameraLidarCalibrator/checkerboard_09_25/data_for_calibration/clouds/0013.pcd");
 %pcshow(cloud);
+
+%% simulate the noise
+brushedDataNoise = brushedData;
+sigma = 0.01;
+for i = 1:length(brushedData)
+    for n = 1:3
+        mu = brushedData(i,n);
+        brushedDataNoise(i,n) = mu + sigma*randn;
+    end
+end
+
+%% RANSAC plane detection
 
 numOfIter = 3;
 thresh = 0.02;
 
 [bestPlanePoints,inliers,cf] = RANSAC_plane_fnc(brushedData,numOfIter,thresh);
+%% removing the noise
+[inliers] = project3DPointsOntoPlane(inliers, cf, bestPlanePoints);
 
 %% Plotting results
 
