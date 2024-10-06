@@ -20,4 +20,5 @@ function worldPoints = generateWorldPoints(boardSize, squareSize)
     
     % Reshape the grid into a list of points and scale by the square size
     worldPoints = [X(:) Y(:)] * squareSize;
+    %worldPoints(:,end+1) = zeros(numRows*numCols,1);
 end

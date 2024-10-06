@@ -43,28 +43,28 @@ function cornersFinal = ExrtactCornersFromImage(imagePoints, boardSize,im)
  ROI_3 = imcrop(im, [est_corn_3(1)-10, est_corn_3(2)-10, 20, 20]);
  ROI_4 = imcrop(im, [est_corn_4(1)-10, est_corn_4(2)-10, 20, 20]);
 
- bw1 = edge(im2gray(ROI_1),'canny');
- bw2 = edge(im2gray(ROI_2),'canny');
- bw3 = edge(im2gray(ROI_3),'canny');
- bw4 = edge(im2gray(ROI_4),'canny');
+ % bw1 = edge(im2gray(ROI_1),'canny');
+ % bw2 = edge(im2gray(ROI_2),'canny');
+ % bw3 = edge(im2gray(ROI_3),'canny');
+ % bw4 = edge(im2gray(ROI_4),'canny');
 
 %% Harris corner detector
-corner1 = detectHarrisFeatures(bw1);
+corner1 = detectHarrisFeatures(im2gray(ROI_1));
 corner1 = corner1.selectStrongest(1);
-corner1 = [corner1.Location(1) + est_corn_1(1) - 10, corner1.Location(2) + est_corn_1(2) - 10];
+corner1 = [corner1.Location(1) + est_corn_1(1) - 11, corner1.Location(2) + est_corn_1(2) - 11];
 
 
-corner2 = detectHarrisFeatures(bw1);
+corner2 = detectHarrisFeatures(im2gray(ROI_2));
 corner2 = corner2.selectStrongest(1);
-corner2 = [corner2.Location(1) + est_corn_2(1) - 10, corner2.Location(2) + est_corn_2(2) - 10];
+corner2 = [corner2.Location(1) + est_corn_2(1) - 11, corner2.Location(2) + est_corn_2(2) - 11];
 
-corner3 = detectHarrisFeatures(bw1);
+corner3 = detectHarrisFeatures(im2gray(ROI_3));
 corner3 = corner3.selectStrongest(1);
-corner3 = [corner3.Location(1) + est_corn_3(1) - 10, corner3.Location(2) + est_corn_3(2) - 10];
+corner3 = [corner3.Location(1) + est_corn_3(1) - 11, corner3.Location(2) + est_corn_3(2) - 11];
 
-corner4 = detectHarrisFeatures(bw1);
+corner4 = detectHarrisFeatures(im2gray(ROI_4));
 corner4 = corner4.selectStrongest(1);
-corner4 = [corner4.Location(1) + est_corn_4(1) - 10, corner4.Location(2) + est_corn_4(2) - 10];
+corner4 = [corner4.Location(1) + est_corn_4(1) - 11, corner4.Location(2) + est_corn_4(2) - 11];
 
 %% Final corners
 

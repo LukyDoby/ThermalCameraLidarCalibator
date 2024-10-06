@@ -3,11 +3,11 @@
 clear; clc; close all;
 
 %% Load images, clouds, intrinsics, ...
-addpath("/home/lukas/ros2_try/bag_processing/MyCameraLidarCalibrator/fresh-clone/Gary_LSD/code/")
-imagePath = fullfile("checkerboard_09_25/data_for_calibration/images");
-ptCloudPath = fullfile("checkerboard_09_25/data_for_calibration/clouds");
+addpath("/home/lukas/ros2_try/bag_processing")
+imagePath = fullfile("/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/images/");
+ptCloudPath = fullfile("/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/clouds/");
 % camera intrinsics
-load("checkerboard_09_25/results.mat")
+load("/home/lukas/ros2_try/bag_processing/checkerboard_09_25/results.mat");
 camera_intrinsics = intrinsics;
 
 imds = imageDatastore(imagePath);
@@ -25,6 +25,7 @@ squareSize = 100;
     estimateCheckerboardCorners3d(imageFileNames,camera_intrinsics,squareSize);
 
 imageFileNames = imageFileNames(dataUsed);
+helperShowImageCorners(imageCorners3d,imageFileNames,intrinsics)
 
 %% Detect checkerboard plane
 
@@ -44,4 +45,5 @@ imageFileNames = imageFileNames(framesUsed);
 
 % Remove 3-D corners from images.
 imageCorners3d = imageCorners3d(:,:,framesUsed);
+
 
