@@ -2,13 +2,13 @@
 clear; clc; close all;
 
 % Create a set of calibration images.
-images = fullfile("/home/lukas/ros2_try/bag_processing/only_checkerboard_10_6_24/Images");
+images = fullfile("/home/lukas/ros2_try/bag_processing/10_9_24_im_ptCloud/data_for_calibration/images/");
 images = imageDatastore(images);
 imageFileNames = images.Files;
-imageFileNamesUsed = [imageFileNames(1); imageFileNames(100); imageFileNames(200)];
+%imageFileNamesUsed = [imageFileNames(1); imageFileNames(100); imageFileNames(200)];
 
 % Detect calibration pattern.
-[imagePoints, boardSize] = detectCheckerboardPoints(imageFileNamesUsed);
+[imagePoints, boardSize] = detectCheckerboardPoints(imageFileNames);
 
 % Generate world coordinates of the corners of the squares.
 squareSize = 100; % millimeters
