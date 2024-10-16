@@ -48,24 +48,24 @@ points3D_cloud = transformPointsToCloudCoordinates(points3D);
 
 %% ray plane intersection
 % 
-% intersectPoints = [];
-% for i = 1: length(imagePoints)
-% 
-%     imgPoint = [imagePoints(i,:)'; 1];
-%     ray_dir = inv(K)* imgPoint;
-%     ray_dir = ray_dir / norm(ray_dir);    
-%     lambda = d_camera / dot(n_camera, ray_dir);
-%     X_intersect =lambda * ray_dir;
-%     X_intersect = transformPointsToCloudCoordinates(X_intersect);
-%     intersectPoints(:,end+1) = X_intersect;
-%  end
+intersectPoints = [];
+for i = 1: length(imagePoints)
 
-% plotting results
+    imgPoint = [imagePoints(i,:)'; 1];
+    ray_dir = inv(K)* imgPoint;
+    ray_dir = ray_dir / norm(ray_dir);    
+    lambda = d_camera / dot(n_camera, ray_dir);
+    X_intersect =lambda * ray_dir;
+    X_intersect = transformPointsToCloudCoordinates(X_intersect);
+    intersectPoints(:,end+1) = X_intersect;
+ end
 
-% pcshow(cloud);
-% %plot3(points3D_cloud(1,:),points3D_cloud(2,:),points3D_cloud(3,:), 'g+', 'MarkerSize',1); axis equal
-% hold on; xlabel('X'); ylabel('Y'); zlabel('Z');
-% plot3(intersectPoints(1,:),intersectPoints(2,:), intersectPoints(3,:), 'g+'); hold off
+%% plottin results
+
+pcshow(cloud);
+%plot3(points3D_cloud(1,:),points3D_cloud(2,:),points3D_cloud(3,:), 'g+', 'MarkerSize',1); axis equal
+hold on; xlabel('X'); ylabel('Y'); zlabel('Z');
+plot3(intersectPoints(1,:),intersectPoints(2,:), intersectPoints(3,:), 'g+'); hold off
 
 
 % plot3(ray_points(1,:), ray_points(2,:), ray_points(3,:), 'ro','MarkerSize',1);
@@ -93,3 +93,10 @@ imageFileNames = '/home/lukas/ros2_try/bag_processing/10_11_24_im_ptCloud/Images
 
 corners3D
 imageCorners3d
+% corners3D = transformPointsToCloudCoordinates(corners3D');
+% corners3D = corners3D .* 1000;
+% %%
+% pcshow(cloud);
+% %plot3(points3D_cloud(1,:),points3D_cloud(2,:),points3D_cloud(3,:), 'g+', 'MarkerSize',1); axis equal
+% hold on; xlabel('X'); ylabel('Y'); zlabel('Z');
+% plot3(corners3D(:,1),corners3D(:,2), corners3D(:,3), 'g+'); hold off
