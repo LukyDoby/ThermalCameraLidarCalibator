@@ -45,6 +45,8 @@ imageCorners3d = imageCorners3d(:,:,framesUsed);
 [tform,errors] = estimateLidarCameraTransform(lidarCheckerboardPlanes, ...
 imageCorners3d,intrinsic.cameraParams);
 
+
+
 %% Display translation, rotation, and reprojection errors as bar graphs.
 
 figure
