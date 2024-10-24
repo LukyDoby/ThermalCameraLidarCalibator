@@ -8,33 +8,6 @@ function cloud_out = myFuseCameraLidar(im,cloud, intrinsic, tform)
 
     for i = 1:length(cloud.Location)
 
-        % point3D = cloud.Location(i,:);
-        % point3D = [point3D'; 1];
-        % point3D_cam_coord = tform.A * point3D;
-        % point3D_cam_coord(end) = [];
-        % pix_loc = intrinsic.K * point3D_cam_coord;
-        % pix_loc(end) = [];
-        % 
-        % 
-        % x = abs(round(pix_loc(1)));
-        % y = abs(round(pix_loc(2)));
-        % 
-        % coord(end+1,:) = [x y];
-        % 
-        % if x < cols && y < rows && x > 0 && y > 0
-        % 
-        %     r = im(y,x, 1);
-        %     g = im(y,x, 2);
-        %     b = im(y,x, 3);
-        % 
-        % else
-        % 
-        %     r = 0; 
-        %     g = 0;
-        %     b = 255;
-        % 
-        % end
-
         point3D = cloud.Location(i,:);
         % point3D = [point3D'; 1];
     
@@ -60,5 +33,4 @@ function cloud_out = myFuseCameraLidar(im,cloud, intrinsic, tform)
         
 
     end
-    % imshow(im); hold on; plot(coord(:,1), coord(:,2), 'r+')
 end

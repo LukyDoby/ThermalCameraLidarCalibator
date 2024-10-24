@@ -387,7 +387,7 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
                 app.TransErrorAxes.Children.CData(app.ListBox2.ValueIndex,:) = [0 0 1];
                 app.TransErrorAxes.Children.FaceColor = "flat";
                 app.RotationErrorAxes.Children.CData(app.ListBox2.ValueIndex,:) = [0 0 1];
-                app.RotationErrorAxes.Children.FaceColor = "flat";
+                app.
 
         end
         
