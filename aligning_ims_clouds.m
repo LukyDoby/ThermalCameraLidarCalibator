@@ -62,14 +62,14 @@ for i = 1: length(imagePoints)
 
 %% plottin results
 
-% pcshow(cloud);
-% %plot3(points3D_cloud(1,:),points3D_cloud(2,:),points3D_cloud(3,:), 'g+', 'MarkerSize',1); axis equal
-% hold on; xlabel('X'); ylabel('Y'); zlabel('Z');
-% plot3(intersectPoints(1,:),intersectPoints(2,:), intersectPoints(3,:), 'g+'); hold off
+pcshow(cloud);
+%plot3(points3D_cloud(1,:),points3D_cloud(2,:),points3D_cloud(3,:), 'g+', 'MarkerSize',1); axis equal
+hold on; xlabel('X'); ylabel('Y'); zlabel('Z');
+plot3(intersectPoints(1,:),intersectPoints(2,:), intersectPoints(3,:), 'g+'); hold off
 
 
-% plot3(ray_points(1,:), ray_points(2,:), ray_points(3,:), 'ro','MarkerSize',1);
-% hold off
+plot3(ray_points(1,:), ray_points(2,:), ray_points(3,:), 'ro','MarkerSize',1);
+hold off
 
 %% Compare 3D corners estimation
 % 
@@ -96,10 +96,10 @@ imageCorners3d
 
 %% Compute PnP and get R,t 
 
-worldPoints_pnp = [0 0 0;0 boardSize(1)*square_size 0; boardSize(2)*square_size 0 0; boardSize(2)*square_size boardSize(1)*square_size 0];
-corners = double(corners);
-worldPoints(:,end+1) = zeros(length(worldPoints),1);
-[worldPose,inlierIdx] = estworldpose(imagePoints,worldPoints,intrinsic);
-
-R_cam = worldPose.R';
+% worldPoints_pnp = [0 0 0;0 boardSize(1)*square_size 0; boardSize(2)*square_size 0 0; boardSize(2)*square_size boardSize(1)*square_size 0];
+% corners = double(corners);
+% worldPoints(:,end+1) = zeros(length(worldPoints),1);
+% [worldPose,inlierIdx] = estworldpose(imagePoints,worldPoints,intrinsic);
+% 
+% R_cam = worldPose.R';
 t_cam = -worldPose.R'*worldPose.Translation';
