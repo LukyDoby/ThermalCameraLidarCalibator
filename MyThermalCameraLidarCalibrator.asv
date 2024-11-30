@@ -5,30 +5,39 @@ clc; close all;
 
 %% Load images and point cloud data into the workspace.
 
-imagePath = fullfile('/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/images/used_data/');
+imagePath = fullfile('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_1/data_for_calibration/images/');
 imds = imageDatastore(imagePath);
 imageFileNames = imds.Files;
-ptCloudFilePath = fullfile('/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/clouds/data_used/');
+ptCloudFilePath = fullfile('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_1/data_for_calibration/clouds/');
 pcds = fileDatastore(ptCloudFilePath,'ReadFcn',@pcread);
 pcFileNames = pcds.Files;
 
 %% Load camera calibration files into the workspace
 
-load('/home/lukas/ros2_try/bag_processing/10_11_24_im_ptCloud/cameraParams_10_11_24.mat');
-params = cameraParams;
-intrinsic = params.Intrinsics;
-
-square_size = 100;
+load('calibrationSession_Boson_hlinik_final.mat');
+intrinsic = calibrationSession.CameraParameters.Intrinsics;
 
 %% Estimate the checkerboard corner coordinates for the images.
 corners_2D = [];
 corners_3D_final = [];
+thresh = 180;
+boardSize = [249 386];
 
 for i = 1:length(imageFileNames)
     im = imread(imageFileNames{i}); 
-    [imagePoints,boardSize] = detectCheckerboardPoints(im);
-    corners = ExrtactCornersFromImage(imagePoints, boardSize,im);
-    corners = flip(corners);
+    [corners, im_undist] = thermalImageProcessing(im,thresh, intrinsic);
+
+    %% Split corners
+    sorted_by_x = sortrows(corners, 1);
+    sorted_by_y = sortrows(corners,2);
+
+    LH = sorted_by_y(1,:);
+    LD = sorted_by_x(1,:);
+    PH = sorted_by_x(end,:);
+    PD = sorted_by_y(end,:);
+
+    corners = [LH; LD; PH; PD];
+ 
     corners_3D = myEstimate3DCorners(corners, boardSize, intrinsic,square_size);
     [imageCorners3d,checkerboardDimension,dataUsed] = estimateCheckerboardCorners3d(imageFileNames{i},intrinsic,100);
     corners_3D = [corners_3D(1,:); corners_3D(3,:); corners_3D(4,:); corners_3D(2,:)];

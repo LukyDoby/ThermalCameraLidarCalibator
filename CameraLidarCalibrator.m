@@ -324,42 +324,42 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
    
         
         function CalibrateButtonDwn(app, event)
-            % 
-            % %% Estimate the checkerboard corner coordinates for the images.
-            % 
-            % [imageCorners3d,planeDimension,imagesUsed] = estimateCheckerboardCorners3d( ...
-            %     app.imageFileNames,app.cameraIntrinsics,app.squareSize);
-            % 
-            % 
-            % app.pcFileNames = app.pcFileNames(imagesUsed);
-            % 
-            % %% Detect the checkerboard planes in the filtered point clouds using the plane parameters planeDimension.
-            % 
-            % [lidarCheckerboardPlanes,framesUsed] = detectRectangularPlanePoints( ...
-            % app.pcFileNames,planeDimension,'RemoveGround',true);
-            % 
-            % %% Extract the images, checkerboard corners, and point clouds in which you detected features.
-            % 
-            % app.imageFileNames = app.imageFileNames(imagesUsed);
-            % app.imageFileNames = app.imageFileNames(framesUsed);
-            % app.pcFileNames = app.pcFileNames(framesUsed);
-            % imageCorners3d = imageCorners3d(:,:,framesUsed);
-            % 
-            % %% Estimate Transformation
-            % 
-            % [app.Tform,app.Errors] = estimateLidarCameraTransform(lidarCheckerboardPlanes, ...
-            % imageCorners3d,app.cameraIntrinsics);
-            % 
-            % bar(app.Errors.TranslationError, 'Parent', app.TransErrorAxes);
-            % xlabel(app.TransErrorAxes,'Frame Number');
-            % 
-            % bar(app.Errors.RotationError, 'Parent', app.RotationErrorAxes);
-            % xlabel(app.RotationErrorAxes,'Frame Number');
-            % 
-            % bar(app.Errors.ReprojectionError, 'Parent', app.ReprojErrorAxes);
-            % xlabel(app.ReprojErrorAxes,'Frame Number');
-            % 
-            % app.ListBox2.Items = app.ListBox.Items;
+
+            %% Estimate the checkerboard corner coordinates for the images.
+
+            [imageCorners3d,planeDimension,imagesUsed] = estimateCheckerboardCorners3d( ...
+                app.imageFileNames,app.cameraIntrinsics,app.squareSize);
+
+
+            app.pcFileNames = app.pcFileNames(imagesUsed);
+
+            %% Detect the checkerboard planes in the filtered point clouds using the plane parameters planeDimension.
+
+            [lidarCheckerboardPlanes,framesUsed] = detectRectangularPlanePoints( ...
+            app.pcFileNames,planeDimension,'RemoveGround',true);
+
+            %% Extract the images, checkerboard corners, and point clouds in which you detected features.
+
+            app.imageFileNames = app.imageFileNames(imagesUsed);
+            app.imageFileNames = app.imageFileNames(framesUsed);
+            app.pcFileNames = app.pcFileNames(framesUsed);
+            imageCorners3d = imageCorners3d(:,:,framesUsed);
+
+            %% Estimate Transformation
+
+            [app.Tform,app.Errors] = estimateLidarCameraTransform(lidarCheckerboardPlanes, ...
+            imageCorners3d,app.cameraIntrinsics);
+
+            bar(app.Errors.TranslationError, 'Parent', app.TransErrorAxes);
+            xlabel(app.TransErrorAxes,'Frame Number');
+
+            bar(app.Errors.RotationError, 'Parent', app.RotationErrorAxes);
+            xlabel(app.RotationErrorAxes,'Frame Number');
+
+            bar(app.Errors.ReprojectionError, 'Parent', app.ReprojErrorAxes);
+            xlabel(app.ReprojErrorAxes,'Frame Number');
+
+            app.ListBox2.Items = app.ListBox.Items;
 
 
 
