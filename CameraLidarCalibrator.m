@@ -7,12 +7,21 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
         FilenamesTab                    matlab.ui.container.Tab
         DetectcalibrationboardButton    matlab.ui.control.Button
         CameraIntrinsicsEditField       matlab.ui.control.EditField
+        CameraIntrinsicsBtnSrch         matlab.ui.control.Button
+        CameraIntrinsicPath
         CameraIntrinsicsEditFieldLabel  matlab.ui.control.Label
-        SquaresizemmEditField           matlab.ui.control.NumericEditField
-        SquaresizemmEditFieldLabel      matlab.ui.control.Label
+        CameraIntrinsicsPathLabel
+        CameraIntrinsicsBtn             matlab.ui.control.Button
+        BoardSizeEditField           matlab.ui.control.NumericEditField
+        BoardSize      matlab.ui.control.Label
         PointCloudsfileEditField        matlab.ui.control.EditField
         PointCloudsfileEditFieldLabel   matlab.ui.control.Label
-        ImagesfileEditField             matlab.ui.control.EditField
+        ImagesFolder
+        ImagesFolderPath
+        CloudFolder
+        CloudFolderPath
+        ImagesSearchBtn                 matlab.ui.control.Button
+        CloudSearchBtn                 matlab.ui.control.Button
         ImagesfileEditFieldLabel        matlab.ui.control.Label
         EnteryourpathtoimagesandpointcloudsdirectoriesLabel  matlab.ui.control.Label
         DataprepareTab                  matlab.ui.container.Tab
@@ -78,47 +87,78 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
             % Create ImagesfileEditFieldLabel
             app.ImagesfileEditFieldLabel = uilabel(app.FilenamesTab);
             app.ImagesfileEditFieldLabel.HorizontalAlignment = 'right';
-            app.ImagesfileEditFieldLabel.Position = [67 238 63 22];
+            app.ImagesfileEditFieldLabel.Position = [42 238 100 22];
             app.ImagesfileEditFieldLabel.Text = 'Images files';
-           
+
+            app.ImagesFolderPath = uilabel(app.FilenamesTab);
+            app.ImagesFolderPath.HorizontalAlignment = 'right';
+            app.ImagesFolderPath.Position = [500 238 600 22];
+            app.ImagesFolderPath.Text = '';
+            
+            app.ImagesSearchBtn = uibutton(app.FilenamesTab, 'push');
+            app.ImagesSearchBtn.Position = [200 238 150 22];
+            app.ImagesSearchBtn.Text = 'Images Folder';
+            app.ImagesSearchBtn.ButtonPushedFcn = @(btn, event)FindImagesFolder(app, event);
 
             % Create ImagesfileEditField
-            app.ImagesfileEditField = uieditfield(app.FilenamesTab, 'text');
-            app.ImagesfileEditField.Position = [145 238 448 22];
-            app.ImagesfileEditField.Value = '/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/images/used_data';
+            % app.ImagesfileEditField = uieditfield(app.FilenamesTab, 'text');
+            % app.ImagesfileEditField.Position = [145 238 448 22];
+            % app.ImagesfileEditField.Value = '/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/images/used_data';
 
             % Create PointCloudsfileEditFieldLabel
             app.PointCloudsfileEditFieldLabel = uilabel(app.FilenamesTab);
             app.PointCloudsfileEditFieldLabel.HorizontalAlignment = 'right';
-            app.PointCloudsfileEditFieldLabel.Position = [42 185 92 22];
+            app.PointCloudsfileEditFieldLabel.Position = [42 185 100 22];
             app.PointCloudsfileEditFieldLabel.Text = 'Point Clouds files';
 
+            app.CloudFolderPath = uilabel(app.FilenamesTab);
+            app.CloudFolderPath.HorizontalAlignment = 'right';
+            app.CloudFolderPath.Position = [500 185 600 22];
+            app.CloudFolderPath.Text = '';
+            
+            app.CloudSearchBtn = uibutton(app.FilenamesTab, 'push');
+            app.CloudSearchBtn.Position = [200 185 150 22];
+            app.CloudSearchBtn.Text = 'Point CLoud Folder';
+            app.CloudSearchBtn.ButtonPushedFcn = @(btn, event)FindCloudFolder(app, event);
+
             % Create PointCloudsfileEditField
-            app.PointCloudsfileEditField = uieditfield(app.FilenamesTab, 'text');
-            app.PointCloudsfileEditField.Position = [149 185 448 22];
-            app.PointCloudsfileEditField.Value = '/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/clouds/data_used';
+            % app.PointCloudsfileEditField = uieditfield(app.FilenamesTab, 'text');
+            % app.PointCloudsfileEditField.Position = [149 185 448 22];
+            % app.PointCloudsfileEditField.Value = '/home/lukas/ros2_try/bag_processing/checkerboard_09_25/data_for_calibration/clouds/data_used';
 
             % Create SquaresizemmEditFieldLabel
-            app.SquaresizemmEditFieldLabel = uilabel(app.FilenamesTab);
-            app.SquaresizemmEditFieldLabel.HorizontalAlignment = 'right';
-            app.SquaresizemmEditFieldLabel.Position = [42 84 100 22];
-            app.SquaresizemmEditFieldLabel.Text = 'Square size (mm)';
+            app.BoardSize = uilabel(app.FilenamesTab);
+            app.BoardSize.HorizontalAlignment = 'right';
+            app.BoardSize.Position = [42 84 100 22];
+            app.BoardSize.Text = 'Board Size [height width] mm';
 
             % Create SquaresizemmEditField
-            app.SquaresizemmEditField = uieditfield(app.FilenamesTab, 'numeric');
-            app.SquaresizemmEditField.Position = [157 84 118 22];
-            app.SquaresizemmEditField.Value = 100;
+            app.BoardSizeEditField = uieditfield(app.FilenamesTab, 'numeric');
+            app.BoardSizeEditField.Position = [157 84 50 22];
+            app.BoardSizeEditField.Value = [249 386];
 
             % Create CameraIntrinsicsEditFieldLabel
             app.CameraIntrinsicsEditFieldLabel = uilabel(app.FilenamesTab);
             app.CameraIntrinsicsEditFieldLabel.HorizontalAlignment = 'right';
-            app.CameraIntrinsicsEditFieldLabel.Position = [36 134 98 22];
+            app.CameraIntrinsicsEditFieldLabel.Position = [36 134 100 22];
             app.CameraIntrinsicsEditFieldLabel.Text = 'Camera Intrinsics';
 
+            app.CameraIntrinsicPath = '/home/lukas/ros2_try/bag_processing/calibrationSession_Boson_hlinik_final.mat';
+
+            app.CameraIntrinsicsBtn = uibutton(app.FilenamesTab, 'push');
+            app.CameraIntrinsicsBtn.Position = [200 134 150 22];
+            app.CameraIntrinsicsBtn.Text = 'Camera Intrinsic';
+            app.CameraIntrinsicsBtn.ButtonPushedFcn = @(btn, event)FindCameraIntrinsicsBtnDwn(app, event);
+
+            app.CameraIntrinsicsPathLabel = uilabel(app.FilenamesTab);
+            app.CameraIntrinsicsPathLabel.HorizontalAlignment = 'right';
+            app.CameraIntrinsicsPathLabel.Position = [500 134 600 22];
+            app.CameraIntrinsicsPathLabel.Text = app.CameraIntrinsicPath;
+
             % Create CameraIntrinsicsEditField
-            app.CameraIntrinsicsEditField = uieditfield(app.FilenamesTab, 'text');
-            app.CameraIntrinsicsEditField.Position = [149 134 448 22];
-            app.CameraIntrinsicsEditField.Value = '/home/lukas/ros2_try/bag_processing/10_11_24_im_ptCloud/cameraParams_10_11_24.mat';
+            % app.CameraIntrinsicsEditField = uieditfield(app.FilenamesTab, 'text');
+            % app.CameraIntrinsicsEditField.Position = [149 134 448 22];
+            % app.CameraIntrinsicsEditField.Value = '/home/lukas/ros2_try/bag_processing/10_11_24_im_ptCloud/cameraParams_10_11_24.mat';
 
             % Create DetectcalibrationboardButton
             app.DetectcalibrationboardButton = uibutton(app.FilenamesTab, 'push');
@@ -129,8 +169,6 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
             % Create DataprepareTab
             app.DataprepareTab = uitab(app.TabGroup);
             app.DataprepareTab.Title = 'Data prepare';
-
-            
 
             % Create UIAxes
             app.CloudAxes = uiaxes(app.DataprepareTab);
@@ -233,20 +271,36 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
     % App creation and deletion
     methods (Access = public)
 
+        function FindImagesFolder(app, event)
+
+            app.ImagesFolder = uigetdir('/home/lukas/ros2_try/bag_processing/');
+            app.ImagesFolderPath.Text = app.ImagesFolder;
+        end
+
+        function FindCloudFolder(app, event)
+            app.CloudFolder = uigetdir('/home/lukas/ros2_try/bag_processing/');
+            app.CloudFolderPath.Text = app.CloudFolder;
+        end
+
+        function FindCameraIntrinsicsBtnDwn(app, event)
+            [app.CameraIntrinsicPath, location] = uigetfile;
+            app.CameraIntrinsicPath = strcat(location,app.CameraIntrinsicPath);
+            app.CameraIntrinsicsPathLabel.Text = app.CameraIntrinsicPath;
+
+        end
+
         function DetectCalibrationBoard(app, event)
-            imageDataPath = app.ImagesfileEditField.Value;
+            imageDataPath = app.ImagesFolder;
             imds = imageDatastore(imageDataPath);
             app.imageFileNames = imds.Files;
 
-            ptCloudFilePath = app.PointCloudsfileEditField.Value;
+            ptCloudFilePath = app.CloudFolder;
             pcds = fileDatastore(ptCloudFilePath,'ReadFcn',@pcread);
             app.pcFileNames = pcds.Files;
             
-            parameters = load(app.CameraIntrinsicsEditField.Value);
+            parameters = load(app.CameraIntrinsicPath);
             app.cameraIntrinsics = struct2cell(parameters);
             app.cameraIntrinsics = app.cameraIntrinsics{1,1};
-
-            app.squareSize = app.SquaresizemmEditField.Value;
             
             cellOfImageNames = cell(1,length(app.imageFileNames));
             %cellOfCloudNames = cell(1,length(app.pcFileNames));
@@ -258,7 +312,6 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
     
                 [~, filename_im, ~] = fileparts(app.imageFileNames{i});
                 cellOfImageNames{i} = strcat(filename_im);
-                
                 
             end
 
@@ -392,7 +445,7 @@ classdef CameraLidarCalibrator < matlab.apps.AppBase
 
         end
         
-        
+      
         % Construct app
         function app = CameraLidarCalibrator
 

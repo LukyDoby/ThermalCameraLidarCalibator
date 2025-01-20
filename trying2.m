@@ -1,21 +1,24 @@
 %% Backprojection of 2D points to rays in 3D
 clear; clc; close all;
 
-cloudDir = dir('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_1/data_for_calibration/clouds/');
+cloud = pcread("/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker1/PointClouds/0119.ply");
+im = imread("/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker1/Images/0119.png");
+load("/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker1/calibration_result_1_16_25.mat");
 
-maxDistance = 0.01;
+
+maxDistance = 0.02;
 numIter = 200;
+
 x_max = -0.5;
-x_min = -2;
-y_min = -1.6;
-y_max = 1.2;
-z_min = -0.2;
-z_max = 1;
+x_min = -3;
+y_min = -1.5;
+y_max = 1.5;
+z_min = -1;
+z_max = 1.8;
 
-for i = 3:length(cloudDir)
-    cloud = pcread(strcat(cloudDir(i).folder, '/', cloudDir(i).name));
-    cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
-    pcshow(cloudOut);
-    close all;
+cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
 
-end
+[coord, im_out] = myFuseCameraLidarThermalPlane(im,cloudOut, intrinsic, tform);
+imshow(im); hold on;
+
+plot(coord(:,1), coord(:,2), 'r+');

@@ -1,4 +1,4 @@
-function cloud_out = myFuseCameraLidar(im,cloud, intrinsic, tform)
+function [cloud_out, coord] = myFuseCameraLidar(im,cloud, intrinsic, tform)
     
     cloud_out = cloud;
     d = size(im);
@@ -10,6 +10,7 @@ function cloud_out = myFuseCameraLidar(im,cloud, intrinsic, tform)
 
         point3D = cloud.Location(i,:);
         % point3D = [point3D'; 1];
+        % point3D = [-point3D(2) -point3D(3) point3D(1)];
     
         [projected, valid] = projectPoints(point3D, intrinsic.K, tform.A, intrinsic.RadialDistortion, [rows cols],true);
         coord(end+1,:) = projected;

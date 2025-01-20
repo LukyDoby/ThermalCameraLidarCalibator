@@ -7,7 +7,7 @@ inliersFinal = [];
 numOfPtsNeeded = 3;
 
 for n = 1:numOfIter
-    %% pick 4 random points
+    %% pick 3 random points
     randPoints= [];
     
     a = 1; % lower bound

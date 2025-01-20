@@ -125,6 +125,7 @@ end
 %transform points
 points = (T*[points,ones(size(points,1),1)]')';
 
+%points = [-points(2) -points(3) points(1) points(4)];  %% Maybe delete this
 if(sortPoints)
     %sort points by distance from camera
     dist = sum(points(:,1:3).^2,2);
@@ -161,6 +162,7 @@ y = yRD + yTD;
 points = [x,y,ones(size(x,1),1)].*repmat(points(:,3),1,3);
 
 %project using camera matrix
+
 points = (K*[points, ones(size(points,1),1)]')';
 points = points(:,1:2)./repmat(points(:,3),1,2);
 
