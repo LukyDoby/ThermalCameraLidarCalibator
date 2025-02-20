@@ -35,25 +35,37 @@ pcFileNames = pcFileNames(dataUsed);
 
 %% Detect lidar checkerboard plane
 
-maxDistance = 0.02;
+maxDistance = 0.01;
 numIter = 200;
 
-x_max = -0.5;
-x_min = -3;
+x_max = -0.7;
+x_min = -2;
 y_min = -1.5;
 y_max = 1.5;
 z_min = -1;
-z_max = 1.8;
-
+z_max = 1;
 
 for i = 1:length(imageFileNames)
-
     cloud = pcread(pcFileNames{i});
+
+    % [~,nonGroundPtCloud,~] = segmentGroundSMRF(cloud,'ElevationThreshold', 0.1);
+  
+    points = cloud.Location;
+    points(points(:,1) < x_min, :) = [];
+    points(points(:,1) > x_max, :) = [];
+    points(points(:,2) < y_min, :) = [];
+    points(points(:,2) > y_max, :) = [];
+    points(points(:,3) < z_min, :) = [];
+    points(points(:,3) > z_max, :) = [];
+    cloud = pointCloud(points);
+    pcshow(cloud);
+    % ptCloudA = pointCloud(brushedData);
+
     cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
-    %pcshow(cloudOut);
+    pcshow(cloudOut);
     %lidarCheckerboardPlanes(i) = pointCloud(brushedData);
     lidarCheckerboardPlanes(i) = cloudOut;
-    
+    % clear brushedData;    
 end
 
 
@@ -67,9 +79,10 @@ imageCorners3d,intrinsic);
 helperShowError(errors);
 
 %% Remove data with high errors and recalibrate
-wrong = [5,6,7,8];
+wrong = [8];
 lidarCheckerboardPlanes(wrong) = [];
 imageCorners3d(:,:,wrong) = [];
+imageFileNames(wrong) = [];
 
 [tform,errors] = estimateLidarCameraTransform(lidarCheckerboardPlanes, ...
 imageCorners3d,intrinsic);
@@ -85,7 +98,7 @@ for i = 1:length(lidarCheckerboardPlanes)
     cloud = lidarCheckerboardPlanes(i);
     im = imread(imageFileNames{i});
     [coords, im_out] = myFuseCameraLidarThermalPlane(im,cloud, intrinsic, tform);
-    imshow(im_out); hold on;
+    imshow(im); hold on;
     if ~isempty(coords)
         plot(coords(:,1), coords(:,2), 'r+');
     end

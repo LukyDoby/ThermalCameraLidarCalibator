@@ -1,15 +1,15 @@
 %% Finding best limits
 clear; clc; close all;
 
-cloudFile = dir(fullfile("/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker1/data_for_calibration/clouds/"));
+cloudFile = dir(fullfile("/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker5/data_for_calibration/clouds/"));
 cloudFileNames = {cloudFile.name};
 cloudFile(ismember(cloudFileNames, {'.', '..'})) = [];
 numOfDataPerOneShot = 1;
-x_max = -0.5;
+x_max = -0.7;
 x_min = -3;
 y_min = -1.5;
-y_max = 1.5;
-z_min = -1;
+y_max = 1.4;
+z_min =-0.8;
 z_max = 1.8;
 
 for i = 1:length(cloudFileNames)
@@ -24,5 +24,6 @@ for i = 1:length(cloudFileNames)
             points(points(:,3) > z_max, :) = [];
             cloud = pointCloud(points);
             pcshow(cloud); 
+            xlabel('x');ylabel('y');zlabel('z')
             close all;
 end

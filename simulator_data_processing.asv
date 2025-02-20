@@ -1,0 +1,66 @@
+%% Processing data from simulator
+clear; clc; close all;
+path = "/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere1/simulator";
+
+for i = 1:25
+    %% read bag
+    bag = ros2bagreader(strcat(path, '/position_', num2str(i), "/position_", num2str(i), "_0.db3"));
+    imageBag = select(bag,'Topic','/camera/image_distorted');
+    pcBag = select(bag,'Topic','/pc2');
+
+    %% Read all the messages    
+
+    imageMsgs = readMessages(imageBag);
+    pcMsgs = readMessages(pcBag);
+
+    %% Data sync
+
+    timeStampsIm = datetime(imageBag.MessageList.Time, 'ConvertFrom', 'posixtime', 'Format', 'dd-MMM-yyyy HH:mm:ss.SSS');
+    timeStampsPc = datetime(pcBag.MessageList.Time, 'ConvertFrom', 'posixtime', 'Format', 'dd-MMM-yyyy HH:mm:ss.SSS');
+    
+    k = 1;
+    if size(timeStampsPc,1) > size(timeStampsIm,1)
+        for n = 1:size(timeStampsIm,1)
+            [val,indx] = min(abs(timeStampsIm(n) - timeStampsPc));
+            if seconds(val) <= 0.1
+                idx(k,:) = [n indx];
+                k = k + 1;
+            end
+        end
+    else
+        for n = 1:size(timeStampsPc,1)
+            [val,indx] = min(abs(timeStampsPc(n) - timeStampsIm));
+            if seconds(val) <= 0.1
+                idx(k,:) = [indx n];
+                k = k + 1;
+            end
+        end
+    end
+
+    I = rosReadImage(imageMsgs{idx(1,1)});
+    pc = pointCloud(rosReadXYZ(pcMsgs{idx(1,2)}));
+
+    %% point cloud segmentation
+
+    x_max = -0.7;
+    x_min = -3;
+    y_min = -1.5;
+    y_max = 1.4;
+    z_min =-0.8;
+    z_max = 1.8;
+
+    points = pc.Location;
+    points(points(:,1) < x_min, :) = [];
+    points(points(:,1) > x_max, :) = [];
+    points(points(:,2) < y_min, :) = [];
+    points(points(:,2) > y_max, :) = [];
+    points(points(:,3) < z_min, :) = [];
+    points(points(:,3) > z_max, :) = [];
+    cloud = pointCloud(points);
+    pcshow(cloud); 
+    xlabel('x');ylabel('y');zlabel('z')
+
+    close all;
+
+end
+

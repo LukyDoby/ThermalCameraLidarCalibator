@@ -74,7 +74,7 @@ end
 
 
 %% Estimate Transformation
-%load('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_1/corners_and_planes.mat')
+load('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_1/corners_and_planes.mat')
 
 [tform,errors] = estimateLidarCameraTransform(lidarCheckerboardPlanes, ...
 corners_3D_final,intrinsic);

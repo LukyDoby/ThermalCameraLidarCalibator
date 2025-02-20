@@ -11,7 +11,7 @@ function cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_m
     cloud = pointCloud(points);
     gridStep = 0.02;
     ptCloudA = pcdownsample(cloud,'gridAverage',gridStep);
-    %pcshow(ptCloudA)
+    % pcshow(ptCloudA);
 
     [~,inliersFinal,~] = RANSAC_plane_fnc(ptCloudA.Location,numIter,maxDistance);
     inliersCloud = pointCloud(inliersFinal);
@@ -20,10 +20,10 @@ function cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_m
     idxValidPoints = find(labels);
     labelColorIndex = labels(idxValidPoints);
     segmentedPtCloud = select(inliersCloud,idxValidPoints);
-    figure
-    colormap(hsv(numClusters))
-    pcshow(segmentedPtCloud.Location,labelColorIndex)
-    title('Point Cloud Clusters')
+    % figure
+    % colormap(hsv(numClusters))
+    % pcshow(segmentedPtCloud.Location,labelColorIndex)
+    % title('Point Cloud Clusters')
     inliersFinal = segmentedPtCloud.Location;
 
     maxNumOfLabels = 0;
@@ -38,7 +38,7 @@ function cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_m
     end
     inliersFinal = inliersFinal(find(labels == clustersFinal), :);
     cloudOut = pointCloud(inliersFinal);
-    pcshow(cloudOut);
+    % pcshow(cloudOut);
 
     %[model1,inlierIndices,outlierIndices] = pcfitplane(nonGroundPtCloud,maxDistance,referenceVector,maxAngularDistance);
 

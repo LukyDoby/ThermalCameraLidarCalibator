@@ -14,7 +14,7 @@ for n = 1:numOfIter
     
         randomNumber = round(a + (b-a) * rand);
         if ~any(ismember(spherePoints(randomNumber,:), randPoints) == 1)
-            randPoints(end+1,:) = spherePoints(randomNumber,:);
+            randPoints(i,:) = spherePoints(randomNumber,:);
             i = i+1;
         end
         
