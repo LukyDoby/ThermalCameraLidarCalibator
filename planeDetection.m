@@ -1,4 +1,4 @@
-function cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max)
+function [cloudOut, finalCoeffs,bestPlanePoints] = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max)
 
     [~,nonGroundPtCloud,~] = segmentGroundSMRF(cloud,'ElevationThreshold', 0.1);
     points = nonGroundPtCloud.Location;
@@ -13,7 +13,7 @@ function cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_m
     ptCloudA = pcdownsample(cloud,'gridAverage',gridStep);
     % pcshow(ptCloudA);
 
-    [~,inliersFinal,~] = RANSAC_plane_fnc(ptCloudA.Location,numIter,maxDistance);
+    [bestPlanePoints,inliersFinal,finalCoeffs] = RANSAC_plane_fnc(ptCloudA.Location,numIter,maxDistance);
     inliersCloud = pointCloud(inliersFinal);
     [labels,numClusters] = pcsegdist(inliersCloud,0.04);
 

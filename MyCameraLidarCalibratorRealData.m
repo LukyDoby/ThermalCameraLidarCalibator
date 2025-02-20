@@ -5,10 +5,10 @@ clc; close all;
 
 %% Load images and point cloud data into the workspace.
 
-imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker1/data_for_calibration/images/');
+imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker2/data_for_calibration/images/');
 imds = imageDatastore(imagePath);
 imageFileNames = imds.Files;
-ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker1/data_for_calibration/clouds/');
+ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker2/data_for_calibration/clouds/');
 pcds = fileDatastore(ptCloudFilePath,'ReadFcn',@pcread);
 pcFileNames = pcds.Files;
 
@@ -37,6 +37,7 @@ pcFileNames = pcFileNames(dataUsed);
 
 maxDistance = 0.01;
 numIter = 200;
+thresh = 0.03;
 
 x_max = -0.7;
 x_min = -2;
@@ -58,11 +59,16 @@ for i = 1:length(imageFileNames)
     points(points(:,3) < z_min, :) = [];
     points(points(:,3) > z_max, :) = [];
     cloud = pointCloud(points);
-    pcshow(cloud);
+    % pcshow(cloud);
     % ptCloudA = pointCloud(brushedData);
 
-    cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
-    pcshow(cloudOut);
+    [cloudOut, coeffs,bestPlanePoints] = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
+    % figure(1); 
+    % pcshow(cloudOut);
+
+    % cloudPtsPtojected = projectOutliersOntoPlane(cloud, coeffs, bestPlanePoints,thresh);
+    % figure(2)
+    % pcshow(cloudPtsPtojected);
     %lidarCheckerboardPlanes(i) = pointCloud(brushedData);
     lidarCheckerboardPlanes(i) = cloudOut;
     % clear brushedData;    
@@ -79,7 +85,7 @@ imageCorners3d,intrinsic);
 helperShowError(errors);
 
 %% Remove data with high errors and recalibrate
-wrong = [8];
+wrong = [10];
 lidarCheckerboardPlanes(wrong) = [];
 imageCorners3d(:,:,wrong) = [];
 imageFileNames(wrong) = [];
