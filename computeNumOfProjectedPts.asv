@@ -19,10 +19,10 @@ function [percentage_project_pts,areas_ratio] = computeNumOfProjectedPts(im, poi
     %% Distort points for spehre fusion
     if(distort_pts_bool)
 
-        LH = distortPoints(intrinsic,LH);
-        PH = distortPoints(intrinsic,PH);
-        PD = distortPoints(intrinsic,PD);
-        LD = distortPoints(intrinsic,LD);
+        LH = distortPoints(LH,intrinsic);
+        PH = distortPoints(PH,intrinsic);
+        PD = distortPoints(PD,intrinsic);
+        LD = distortPoints(LD,intrinsic);
 
     end
 
@@ -80,11 +80,9 @@ function [percentage_project_pts,areas_ratio] = computeNumOfProjectedPts(im, poi
 
    %% Plotting resuts
     if(distort_pts_bool)
-        imshow(im);
-    else
-        imshow(im_undist);
+        imshow(im_un);
     end
-   
+   imshow(im_undist);
    hold on;
    plot([LH(1),PH(1)], [LH(2),PH(2)], "b-", 'LineWidth',1);
    plot([PH(1),PD(1)], [PH(2),PD(2)], "b-", 'LineWidth',1);

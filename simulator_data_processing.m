@@ -1,14 +1,15 @@
 %% Processing data from simulator
 clear; clc; close all;
-path = "/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere4/simulator_undistorted";
-numOfIter = 70;
-thresh = 0.02;
+path = "/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/";
+numOfIter = 150;
+thresh = 0.01;
 ptImCentersCell = cell(25,3);
 
 for i = 1:25
+    disp(['i = ', num2str(i)]);
     %% read bag
     bag = ros2bagreader(strcat(path, '/position', num2str(i), "/position", num2str(i), "_0.db3"));
-    imageBag = select(bag,'Topic','/camera/image_raw');
+    imageBag = select(bag,'Topic','/camera/image_distorted');
     pcBag = select(bag,'Topic','/pc2');
 
     %% Read all the messages    
@@ -25,7 +26,7 @@ for i = 1:25
     if size(timeStampsPc,1) > size(timeStampsIm,1)
         for n = 1:size(timeStampsIm,1)
             [val,indx] = min(abs(timeStampsIm(n) - timeStampsPc));
-            if seconds(val) <= 0.05
+            if seconds(val) <= 0.1
                 idx(k,:) = [n indx];
                 k = k + 1;
             end
@@ -33,7 +34,7 @@ for i = 1:25
     else
         for n = 1:size(timeStampsPc,1)
             [val,indx] = min(abs(timeStampsPc(n) - timeStampsIm));
-            if seconds(val) <= 0.05
+            if seconds(val) <= 0.1
                 idx(k,:) = [indx n];
                 k = k + 1;
             end
@@ -53,6 +54,9 @@ for i = 1:25
 
     p = 4; % Number of unique numbers
     limit = length(idx); % Maximum limit (inclusive)
+    if p > limit
+        p = limit;
+    end
     rand_idx = randperm(limit, p);
     centers = [];
     radiis = [];
@@ -61,27 +65,45 @@ for i = 1:25
 
         value = rand_idx(n);
         pc = pointCloud(rosReadXYZ(pcMsgs{idx(value,2)}));
-        [~,nonGroundPtCloud,groundPtCloud] = segmentGroundSMRF(pc,MaxWindowRadius=5,ElevationThreshold=1.5,ElevationScale=0.4);
-
+        pc_points = pc.Location;
+        [bestPlanePoints,inliersFinal,finalPlaneCoeffs] = RANSAC_plane_fnc(pc_points,150,0.04);
+        [~, idx_to_delete] = ismember(pc.Location, inliersFinal, 'rows');
+        rowsToDelete = find(idx_to_delete);
+        pc_points(rowsToDelete, :) = [];
+        pc = pointCloud(pc_points);
+        % pcshow(pc);
+    % 
+    %     % [~,nonGroundPtCloud,groundPtCloud] = segmentGroundSMRF(pc,MaxWindowRadius=5,ElevationThreshold=1.5,ElevationScale=0.4);
+    % 
         %% Filter pc locations with -inf or inf
 
-        pc_loc = nonGroundPtCloud.Location;
+        pc_loc = pc.Location;
         validIndices = ~isinf(pc_loc(:,1)) & ~isinf(pc_loc(:,2)) & ~isinf(pc_loc(:,3));
         filteredPointCloud = pc_loc(validIndices, :);
+
+        % %% Apply limits 
+        % z_min = -5;
+        % z_max = 6;
+        % 
+        % filteredPointCloud(filteredPointCloud(:,3) < z_min, :) = [];
+        % filteredPointCloud(filteredPointCloud(:,3) > z_max, :) = [];
+        pcshow(filteredPointCloud);
 
         %% Ransac computing
         [bestSpherePoints,inliers] = RANSAC_sphere_fnc(filteredPointCloud,numOfIter,thresh);       %% STOP HERE
         accurancy = length(inliers)/length(filteredPointCloud);
-        while accurancy < 0.97
+        disp(['accurancy = ', num2str(accurancy)]);
+        while accurancy < 0.8
 
             [bestSpherePoints,inliers] = RANSAC_sphere_fnc(filteredPointCloud,numOfIter,thresh);       %% STOP HERE
             accurancy = length(inliers)/length(filteredPointCloud);
+             disp(['accurancy = ', num2str(accurancy)]);
         end
-        pc = pointCloud(filteredPointCloud);
+        pc = pointCloud(inliers);
         [center,radius] = getTheEquationOfSphere(bestSpherePoints);
 
         %% Sphere plot with ptCloud
-
+        % 
         % plot3(pc.Location(:,1),pc.Location(:,2),pc.Location(:,3), "b."); axis equal; hold on;
         % [X,Y,Z] = sphere;
         % r = radius;

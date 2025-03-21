@@ -1,7 +1,7 @@
 %% Finding best limits
 clear; clc; close all;
 
-cloudFile = dir(fullfile("/media/lukas/T9/Dobrovolny/17_12_24_bags/chacker5/data_for_calibration/clouds/"));
+cloudFile = dir(fullfile("/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere4/simulator_distorted/position1/"));
 cloudFileNames = {cloudFile.name};
 cloudFile(ismember(cloudFileNames, {'.', '..'})) = [];
 numOfDataPerOneShot = 1;

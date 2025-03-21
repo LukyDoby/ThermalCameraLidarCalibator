@@ -6,9 +6,11 @@ clc; close all;
 %% Load images and point cloud data into the workspace.
 
 imagePath = fullfile('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_2/data_for_calibration/images/');
+imagePath = fullfile('/media/lukas/T9/Dobrovolny/26_11_24_bags/26_11_24_thermal_2/data_for_calibration/images/');
 imds = imageDatastore(imagePath);
 imageFileNames = imds.Files;
 ptCloudFilePath = fullfile('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_2/data_for_calibration/clouds/');
+ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/26_11_24_bags/26_11_24_thermal_2/data_for_calibration/clouds/');
 pcds = fileDatastore(ptCloudFilePath,'ReadFcn',@pcread);
 pcFileNames = pcds.Files;
 
@@ -35,7 +37,7 @@ z_max = 1;
 for i = 1:length(imageFileNames)
     im = imread(imageFileNames{i}); 
     [corners, im_undist] = thermalImageProcessing(im,thresh, intrinsic);
-    imshow(im_undist); hold on; plot(corners(:,1), corners(:,2), 'r+');
+    imshow(im_undist); hold on; plot(corners(:,1), corners(:,2), 'r+', "MarkerSize",10,"LineWidth",2);
     %% Split corners
     sorted_by_x = sortrows(corners, 1);
     sorted_by_y = sortrows(corners,2);
@@ -55,8 +57,9 @@ for i = 1:length(imageFileNames)
     cloud = pcread(pcds.Files{i});
     cloudOut = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
     pcshow(cloudOut);
-    lidarCheckerboardPlanes(i) = pointCloud(brushedData);
-    clear brushedData;
+    % lidarCheckerboardPlanes(i) = pointCloud(brushedData);
+    lidarCheckerboardPlanes(i) = cloudOut;
+    % clear brushedData;
 
     close all;
 end
@@ -74,10 +77,22 @@ end
 
 
 %% Estimate Transformation
-load('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_1/corners_and_planes.mat')
+% load('/home/lukas/ros2_try/bag_processing/26_11_24_thermal_1/corners_and_planes.mat')
 
 [tform,errors] = estimateLidarCameraTransform(lidarCheckerboardPlanes, ...
 corners_3D_final,intrinsic);
+
+%% Remove data with high errors and recalibrate
+wrong = [9];
+lidarCheckerboardPlanes(wrong) = [];
+corners_3D_final(:,:,wrong) = [];
+imageFileNames(wrong) = [];
+
+[tform,errors] = estimateLidarCameraTransform(lidarCheckerboardPlanes, ...
+corners_3D_final,intrinsic);
+
+%%
+helperShowError(errors);
 
 %% Fuse camera to Lidar
 % im = imread(imageFileNames{1});
@@ -100,18 +115,18 @@ for i = 1:length(lidarCheckerboardPlanes)
 end
 %% Display translation, rotation, and reprojection errors as bar graphs.
 % 
-figure
-bar(errors.TranslationError)
-xlabel('Frame Number')
-title('Translation Error (meters)')
-
-figure
-bar(errors.RotationError)
-xlabel('Frame Number')
-title('Rotation Error (degrees)')
-
-figure
-bar(errors.ReprojectionError)
-xlabel('Frame Number')
-title('Reprojection Error (pixels)')
-
+% figure
+% bar(errors.TranslationError)
+% xlabel('Frame Number')
+% title('Translation Error (meters)')
+% 
+% figure
+% bar(errors.RotationError)
+% xlabel('Frame Number')
+% title('Rotation Error (degrees)')
+% 
+% figure
+% bar(errors.ReprojectionError)
+% xlabel('Frame Number')
+% title('Reprojection Error (pixels)')
+helperShowError(errors);

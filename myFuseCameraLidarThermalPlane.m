@@ -12,7 +12,7 @@ function [coord, im_out] = myFuseCameraLidarThermalPlane(im,cloud, intrinsic, tf
         point3D = cloud.Location(i,:);
         % point3D = [point3D'; 1];
     
-        [projected, valid] = projectPoints(point3D, intrinsic.K, tform.A, intrinsic.RadialDistortion, [rows cols],true);
+        [projected] = projectPoints(point3D, intrinsic.K, tform.A, intrinsic.RadialDistortion, [rows cols],true);
     
         if(~isnan(projected(1)) && ~isnan(projected(2)))
 

@@ -3,24 +3,24 @@ clear; clc; close all;
 
 %% Loading data and calibration resuts
 
-imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker7/data_for_calibration/images/');
+imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/chckerboard/data_for_calibration/images/');
 imds = imageDatastore(imagePath);
 imageFileNames = imds.Files;
-ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker7/data_for_calibration/clouds/');
+ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/chckerboard/data_for_calibration/');
 pcds = fileDatastore(ptCloudFilePath,'ReadFcn',@pcread);
 pcFileNames = pcds.Files;
 
-load('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere7/centers_18_2_25.mat')  % loading sphere calib results
-load('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker7/calibration_results_21_2_25.mat')  % loading checkerboard calib results
+load('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere1/simulator/centers_detection_results_4_2_2025.mat')  % loading sphere calib results
+load('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere1/simulator/chackerboard/calibration_results.mat')  % loading checkerboard calib results
 
-load('camera_params_RGB_12_14_24.mat');
-params = cameraParams;
+load('/home/lukas/ros2_humble/camera_calib_intrinsics/gazebo_camera_params.mat');
+% params = cameraParams;
 intrinsic = params.Intrinsics;
 
-squareSize = 42.5;
+squareSize = 50;
 
-%% If varialbes like lidarCheckerboardPlanes, imageFileNames or pcFileNames exist, I will remove it because I am gonna find it again
-
+% %% If varialbes like lidarCheckerboardPlanes, imageFileNames or pcFileNames exist, I will remove it because I am gonna find it again
+% 
 % if exist("lidarCheckerboardPlanes")
 %     clear('lidarCheckerboardPlanes');
 % end
@@ -33,7 +33,7 @@ squareSize = 42.5;
 
 %% Estimating corners of the checkerboard
 
-padding_me = [106 93 109 101];
+padding_me = [0 0 0 0];
 
 [imageCorners3d,checkerboardDimension,dataUsed] = ...
     estimateCheckerboardCorners3d(imageFileNames,intrinsic,squareSize,"Padding",padding_me);
@@ -43,36 +43,32 @@ padding_me = [106 93 109 101];
 imageFileNames = imageFileNames(dataUsed);
 pcFileNames = pcFileNames(dataUsed);
 
+%% Plotting image corners
+% for i = 1:length(imageFileNames)
+%     im = imread(imageFileNames{i});
+%     [imCorners2d,J] = helperShowImageCorners(imageCorners3d(:,:,i), im, intrinsic);
+%     imshow(J); hold on;
+%     plot(imCorners2d(:,1), imCorners2d(:,2), 'b-');
+%     close all;
+% end
+
 %% Detect lidar checkerboard plane
 
 maxDistance = 0.01;
 numIter = 200;
 
-x_max = -0.7;
-x_min = -2;
-y_min = -1.5;
-y_max = 1.5;
-z_min = -1;
-z_max = 1;
 thresh = 0.03;
 
 for i = 1:length(imageFileNames)
     cloud = pcread(pcFileNames{i});
+%% For Simulator
+    [~,nonGroundPtCloud,groundPtCloud] = segmentGroundSMRF(cloud,MaxWindowRadius=5,ElevationThreshold=0.6,ElevationScale=0.4);
 
-    % [~,nonGroundPtCloud,~] = segmentGroundSMRF(cloud,'ElevationThreshold', 0.1);
-  
-    points = cloud.Location;
-    points(points(:,1) < x_min, :) = [];
-    points(points(:,1) > x_max, :) = [];
-    points(points(:,2) < y_min, :) = [];
-    points(points(:,2) > y_max, :) = [];
-    points(points(:,3) < z_min, :) = [];
-    points(points(:,3) > z_max, :) = [];
-    cloud = pointCloud(points);
+    cloud = nonGroundPtCloud;
     % pcshow(cloud);
     % ptCloudA = pointCloud(brushedData);
 
-    [cloudOut, coeffs,bestPlanePoints] = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
+    [cloudOut, coeffs,bestPlanePoints] = planeDetection_simulator(cloud, maxDistance,numIter);
     % pcshow(cloudOut);
     cloudPtsPtojected = projectOutliersOntoPlane(cloud, coeffs, bestPlanePoints,thresh);
     pcshow(cloudPtsPtojected); hold on;

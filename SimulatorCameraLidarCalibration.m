@@ -3,17 +3,17 @@ clear; clc; close all;
 
 %% Load images and point cloud data into the workspace.
 
-imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere3/simulator/checkerboard/data_for_calibration/images/');
+imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/chckerboard/data_for_calibration/images/');
 imds = imageDatastore(imagePath);
 imageFileNames = imds.Files;
-ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere3/simulator/checkerboard/data_for_calibration/clouds/');
+ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/chckerboard/data_for_calibration/clouds/');
 pcds = fileDatastore(ptCloudFilePath,'ReadFcn',@pcread);
 pcFileNames = pcds.Files;
 
 %% Load camera calibration files into the workspace
 
-load("/home/lukas/ros2_humble/camera_calib_intrinsics/gazebo_camera_params.mat");
-cameraParams = params;
+load("/home/lukas/ros2_humble/cameraParams_dist_gazebo.mat");
+% cameraParams = params;
 intrinsic = cameraParams.Intrinsics;
 
 square_size = 50;
@@ -61,7 +61,7 @@ xlabel('Frame Number')
 title('Reprojection Error (pixels)')
 
 %% Remove data with high errors and recalibrate
-wrong = 17;
+wrong = 2;
 lidarCheckerboardPlanes(wrong) = [];
 imageCorners3d(:,:,wrong) = [];
 imageFileNames(wrong,:) = [];

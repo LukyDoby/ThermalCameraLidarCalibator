@@ -30,5 +30,5 @@ function [imCorners2d,J] = helperShowImageCorners(imCorners3d, im, intrinsic)
     % plot(imCorners2d(2, 1), imCorners2d(2, 2), 'or', 'MarkerSize', 10, 'Parent', ax);
     % plot(imCorners2d(3, 1), imCorners2d(3, 2), 'ob', 'MarkerSize', 10, 'Parent', ax);
     % plot(imCorners2d(4, 1), imCorners2d(4, 2), 'om', 'MarkerSize', 10, 'Parent', ax);
-    % end
+    
 end

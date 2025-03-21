@@ -85,7 +85,7 @@ imageCorners3d,intrinsic);
 helperShowError(errors);
 
 %% Remove data with high errors and recalibrate
-wrong = [10];
+wrong = [4];
 lidarCheckerboardPlanes(wrong) = [];
 imageCorners3d(:,:,wrong) = [];
 imageFileNames(wrong) = [];

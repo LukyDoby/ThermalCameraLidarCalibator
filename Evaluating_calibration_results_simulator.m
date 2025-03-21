@@ -3,24 +3,24 @@ clear; clc; close all;
 
 %% Loading data and calibration resuts
 
-imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker7/data_for_calibration/images/');
+imagePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/chckerboard/data_for_calibration/images/');
 imds = imageDatastore(imagePath);
 imageFileNames = imds.Files;
-ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker7/data_for_calibration/clouds/');
+ptCloudFilePath = fullfile('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/chckerboard/data_for_calibration/clouds/');
 pcds = fileDatastore(ptCloudFilePath,'ReadFcn',@pcread);
 pcFileNames = pcds.Files;
 
-load('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere7/centers_18_2_25.mat')  % loading sphere calib results
-load('/media/lukas/T9/Dobrovolny/17_12_24_bags/checker7/calibration_results_21_2_25.mat')  % loading checkerboard calib results
+load('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/centers.mat')  % loading sphere calib results
+load('/media/lukas/T9/Dobrovolny/17_12_24_bags/sphere5/simulator/chckerboard/calibration_results_21_3_25.mat')  % loading checkerboard calib results
 
-load('camera_params_RGB_12_14_24.mat');
+load('/home/lukas/ros2_humble/cameraParams_dist_gazebo.mat');
 params = cameraParams;
 intrinsic = params.Intrinsics;
 
-squareSize = 42.5;
+squareSize = 50;
 
-%% If varialbes like lidarCheckerboardPlanes, imageFileNames or pcFileNames exist, I will remove it because I am gonna find it again
-
+% %% If varialbes like lidarCheckerboardPlanes, imageFileNames or pcFileNames exist, I will remove it because I am gonna find it again
+% 
 % if exist("lidarCheckerboardPlanes")
 %     clear('lidarCheckerboardPlanes');
 % end
@@ -33,7 +33,7 @@ squareSize = 42.5;
 
 %% Estimating corners of the checkerboard
 
-padding_me = [106 93 109 101];
+padding_me = [0 0 0 0];
 
 [imageCorners3d,checkerboardDimension,dataUsed] = ...
     estimateCheckerboardCorners3d(imageFileNames,intrinsic,squareSize,"Padding",padding_me);
@@ -43,36 +43,34 @@ padding_me = [106 93 109 101];
 imageFileNames = imageFileNames(dataUsed);
 pcFileNames = pcFileNames(dataUsed);
 
+helperShowImageCorners_original(imageCorners3d, imageFileNames, intrinsic)
+
+% %% Plotting image corners
+% for i = 1:length(imageFileNames)
+%     im = imread(imageFileNames{i});
+%     [imCorners2d,J] = helperShowImageCorners(imageCorners3d(:,:,i), im, intrinsic);
+%     imshow(J); hold on;
+%     plot(imCorners2d(:,1), imCorners2d(:,2), 'b-');
+%     close all;
+% end
+
 %% Detect lidar checkerboard plane
 
 maxDistance = 0.01;
 numIter = 200;
 
-x_max = -0.7;
-x_min = -2;
-y_min = -1.5;
-y_max = 1.5;
-z_min = -1;
-z_max = 1;
 thresh = 0.03;
 
 for i = 1:length(imageFileNames)
     cloud = pcread(pcFileNames{i});
+%% For Simulator
+    [~,nonGroundPtCloud,groundPtCloud] = segmentGroundSMRF(cloud,MaxWindowRadius=5,ElevationThreshold=0.6,ElevationScale=0.4);
 
-    % [~,nonGroundPtCloud,~] = segmentGroundSMRF(cloud,'ElevationThreshold', 0.1);
-  
-    points = cloud.Location;
-    points(points(:,1) < x_min, :) = [];
-    points(points(:,1) > x_max, :) = [];
-    points(points(:,2) < y_min, :) = [];
-    points(points(:,2) > y_max, :) = [];
-    points(points(:,3) < z_min, :) = [];
-    points(points(:,3) > z_max, :) = [];
-    cloud = pointCloud(points);
+    cloud = nonGroundPtCloud;
     % pcshow(cloud);
     % ptCloudA = pointCloud(brushedData);
 
-    [cloudOut, coeffs,bestPlanePoints] = planeDetection(cloud, maxDistance,numIter ,x_min, x_max, y_min, y_max, z_min, z_max);
+    [cloudOut, coeffs,bestPlanePoints] = planeDetection_simulator(cloud, maxDistance,numIter);
     % pcshow(cloudOut);
     cloudPtsPtojected = projectOutliersOntoPlane(cloud, coeffs, bestPlanePoints,thresh);
     pcshow(cloudPtsPtojected); hold on;
@@ -84,6 +82,8 @@ end
 %% Percision of the fusion checkerboard
 checkerboard_fusion_percentage = [];
 areas_ratios_checker = [];
+distort_checkerboard_corners = false;
+
 for i = 1:length(lidarCheckerboardPlanes)
     cloud = lidarCheckerboardPlanes(i);
     im = imread(imageFileNames{i});
@@ -92,7 +92,7 @@ for i = 1:length(lidarCheckerboardPlanes)
     if ~isempty(coords)
       coords = undistortPoints(coords,intrinsic);
       plot(coords(:,1), coords(:,2), 'r+');
-      [percentage, areas_ratio] = computeNumOfProjectedPts(im, coords, imageCorners3d(:,:,i),intrinsic);
+      [percentage, areas_ratio] = computeNumOfProjectedPts(im, coords, imageCorners3d(:,:,i),intrinsic,distort_checkerboard_corners);
       checkerboard_fusion_percentage(1, end+1) = percentage;
       areas_ratios_checker(1,end+1) = areas_ratio;
     end
@@ -105,16 +105,19 @@ checker_mean = mean(checkerboard_fusion_percentage);
 [a_0, a_1, A_0, A_1, a_x, a_y] = computeConstantsForSpehreFusion(ptImCentersCell);
 sphere_fusion_percentage = [];
 areas_ratios_sphere = [];
+distort_checkerboard_corners = true;
+
+
 for i = 1:length(lidarCheckerboardPlanes)
     cloud = lidarCheckerboardPlanes(i);
     im = imread(imageFileNames{i});
     coords = myFuseCameraLidarSpehre(im,cloud,a_x,a_y,a_0,a_1,A_0, A_1);
     im_out = undistortImage(im, intrinsic);
-    imshow(im_out); hold on;
+    imshow(im); hold on;
     if ~isempty(coords)
-        coords = undistortPoints(coords,intrinsic);
+        % coords = undistortPoints(coords,intrinsic);
         plot(coords(:,1), coords(:,2), 'r+');
-        [percentage, areas_ratio] = computeNumOfProjectedPts(im, coords, imageCorners3d(:,:,i),intrinsic);
+        [percentage, areas_ratio] = computeNumOfProjectedPts(im, coords, imageCorners3d(:,:,i),intrinsic,distort_checkerboard_corners);
         % disp(areas_ratio);
         sphere_fusion_percentage(1,end+1) = percentage;
         areas_ratios_sphere(1,end+1) = areas_ratio;

@@ -1,4 +1,4 @@
-function [ projected, valid ] = projectPoints( points, K, T, D, imageSize, sortPoints )
+function [ points ] = projectPoints( points, K, T, D, imageSize, sortPoints )
 %PROJECTPOINTS Projects 3d points onto a plane using a camera model.
 %   Applies a standard pin-point camera model with optional distortion
 %   parameters to the points.
@@ -131,13 +131,14 @@ if(sortPoints)
     dist = sum(points(:,1:3).^2,2);
     [~,idx] = sort(dist,'descend');
     points = points(idx,:);
-    colour = colour(idx,:);
+    % colour = colour(idx,:);
 end
 
 %reject points behind camera
-valid = points(:,3) > 0;
-points = points(valid,:);
-colour = colour(valid,:);
+
+% valid = points(:,3) > 0;
+% points = points(valid,:);
+% colour = colour(valid,:);
 
 %project onto a plane using normalized image coordinates
 x = points(:,1)./points(:,3);
@@ -167,14 +168,14 @@ points = (K*[points, ones(size(points,1),1)]')';
 points = points(:,1:2)./repmat(points(:,3),1,2);
 
 %output nans for points behind camera
-projected = nan(size(valid,1),2+size(colour,2));
-projected(valid,:) = [points,colour];
-
-%set points outside of the image region as invalid
-if(~isempty(imageSize))
-    inside = points(:,1) < imageSize(2);
-    inside = and(inside, points(:,2) < imageSize(1));
-    inside = and(inside, points(:,1) >= 0);
-    inside = and(inside, points(:,2) >= 0);
-    valid(valid) = inside;
-end
+% projected = nan(size(valid,1),2+size(colour,2));
+% projected(valid,:) = [points,colour];
+% 
+% set points outside of the image region as invalid
+% if(~isempty(imageSize))
+%     inside = points(:,1) < imageSize(2);
+%     inside = and(inside, points(:,2) < imageSize(1));
+%     inside = and(inside, points(:,1) >= 0);
+%     inside = and(inside, points(:,2) >= 0);
+%     valid(valid) = inside;
+% end
